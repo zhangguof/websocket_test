@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="jquery-2.1.1.min.js"></script>
+<link rel="stylesheet" type="text/css" href="webs.css" />
+ 
+<title>WebSockets Client</title>
+ 
+</head>
+<body>
+<div id="wrapper">
+ 
+    <div id="container">
+ 
+        <h1>WebSockets Client</h1>
+ 
+        <div id="chatLog">
+ 
+        </div><!-- #chatLog -->
+        <p id="examples">e.g. try 'hi', 'name', 'age', 'today'</p>
+ 
+        <input id="text" type="text" />
+        <button id="disconnect">Disconnect</button>
+ 
+    </div><!-- #container -->
+ 
+</div>
+
+<script>
+var host = "ws://localhost:9000";
+var socket;
+
+function on_open(){
+	message('<p class="event">Socket Status: '+socket.readyState+' (open)');
+	
+}
+
+function on_message(msg){
+	message('<p class="message">Received: '+msg.data);
+}
+
+
+function message(msg){
+   	$('#chatLog').append(msg+'</p>');
+    }
+
+
+
+
+
+function send(){
+
+    var text = $('#text').val();
+    if(text==""){
+        message('<p class="warning">Please enter a message');
+        return ;
+    }
+    try{
+        socket.send(text);
+        message('<p class="event">Sent: '+text)
+    } catch(exception){
+   	message('<p class="warning"> Error:' + exception);
+    }
+
+    $('#text').val("");
+
+}
+
+
+
+
+
+$(document).ready(function() {
+	if(!("WebSocket" in window)){
+		$('#chatLog, input, button, #examples').fadeOut("fast");
+		$('<p>Oh no, you need a browser that supports WebSockets. How about <a href="http://www.google.com/chrome">Google/a>?</p>').appendTo('#container');
+	}else{
+
+	//The user has WebSockets
+
+	connect();
+
+	function connect(){
+    	//the connect function code is below
+    	try {
+	    	socket = new WebSocket(host);
+	    	socket.onopne = on_open;
+	    	socket.onmessage = on_message;
+
+	    	message('<p class="event">Socket Status: '+socket.readyState);
+
+	    	socket.onclose = function(){
+	    		message('<p class="event">Socket Status: '+socket.readyState+' (Closed)');
+	    	}
+    	} catch(exception){
+    		message('<p>Error'+exception);
+    	}
+	}
+
+
+	$('#text').keypress(function(event) {
+    if (event.keyCode == '13') {
+   		send();
+    }
+	});
+
+} //else
+
+$("#disconnect").click(function(){
+		socket.close();
+	});
+
+});
+</script>
+</body>
+</html>​
